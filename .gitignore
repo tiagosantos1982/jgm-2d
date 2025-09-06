@@ -1,0 +1,13 @@
+# IntelliJ IDEA project settings
+.idea/
+out/
+*.iml
+*.ipr
+*.iws
+# Build artifacts
+*.class
+# OS files
+.DS_Store
+Thumbs.db
+# Logs
+*.log
