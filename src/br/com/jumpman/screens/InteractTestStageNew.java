@@ -4,11 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import br.com.jumpman.Player;
-import br.com.jumpman.PlataformaSimples;
-import br.com.jumpman.PlataformaDinamica;
+import br.com.jumpman.entities.Player;
+import br.com.jumpman.platforms.PlataformaSimples;
+import br.com.jumpman.platforms.PlataformaDinamica;
+import br.com.jumpman.components.TimerDisplay;
 
-public class InteractTestStage extends JPanel {
+public class InteractTestStageNew extends JPanel {
     private Player player;
     private boolean left = false, right = false;
     private PlataformaSimples[] platforms;
@@ -18,8 +19,9 @@ public class InteractTestStage extends JPanel {
     private PlataformaDinamica elevatorPlatform; // Plataforma din�mica do elevador
     private Elevator elevator; // Elevador
     private Inventory inventory;
+    private TimerDisplay timerDisplay; // Timer display de 1 minuto
     
-    public InteractTestStage() {
+    public InteractTestStageNew() {
         setBackground(Color.BLACK);
         setFocusable(true);
         
@@ -57,6 +59,9 @@ public class InteractTestStage extends JPanel {
         
         // Invent�rio com 3 slots
         inventory = new Inventory();
+        
+        // Inicializar timer display - 1 minuto (60 segundos), posicionado no lado direito
+        timerDisplay = new TimerDisplay("d:/00-MyLab/java/jumpman/resources/images/timer_icon.txt", 60, 650, 30, 32);
         
         // Usar KeyBindings ao inv�s de KeyListener para garantir funcionamento
         setupKeyBindings();
@@ -274,6 +279,18 @@ public class InteractTestStage extends JPanel {
         
         // Desenhar invent�rio
         inventory.draw(g2, 20, 150);
+        
+        // Desenhar timer display no canto superior direito
+        timerDisplay.draw(g2);
+    }
+    
+    @Override
+    public void removeNotify() {
+        // Limpar recursos quando o painel for removido
+        if (timerDisplay != null) {
+            timerDisplay.dispose();
+        }
+        super.removeNotify();
     }
     
     // Classe interna para as chaves

@@ -4,9 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import br.com.jumpman.Player;
-import br.com.jumpman.PlataformaSimples;
-import br.com.jumpman.PlataformaDinamica;
+import br.com.jumpman.entities.Player;
+import br.com.jumpman.platforms.PlataformaSimples;
+import br.com.jumpman.platforms.PlataformaDinamica;
+import br.com.jumpman.components.TimerDisplay;
 
 public class InteractTestStage extends JPanel {
     private Player player;
@@ -15,9 +16,10 @@ public class InteractTestStage extends JPanel {
     private PlataformaSimples ground;
     private Key[] keys; // Array de chaves coloridas
     private Door door; // Porta azul
-    private PlataformaDinamica elevatorPlatform; // Plataforma din�mica do elevador
+    private PlataformaDinamica elevatorPlatform; // Plataforma dinâmica do elevador
     private Elevator elevator; // Elevador
     private Inventory inventory;
+    private transient TimerDisplay timerDisplay; // Timer display de 1 minuto
     
     public InteractTestStage() {
         setBackground(Color.BLACK);
@@ -26,15 +28,15 @@ public class InteractTestStage extends JPanel {
         // Inicializar player
         player = new Player(100, 450, 20, 30);
         
-        // Ch�o completo
+        // Chão completo
         ground = new PlataformaSimples(0, 550, 800, 50);
         
         // 5 plataformas (removida a plataforma do elevador)
         platforms = new PlataformaSimples[] {
-            new PlataformaSimples(270, 450, 80, 20),  // Alcan��vel pulando
+            new PlataformaSimples(270, 450, 80, 20),  // Alcançável pulando
             new PlataformaSimples(400, 350, 120, 20),  // Serve de apoio
             new PlataformaSimples(600, 250, 100, 20),  // Plataforma antiga
-            new PlataformaSimples(350, 100, 150, 20)   // Plataforma da porta (porta ficar� ACIMA)
+            new PlataformaSimples(350, 100, 150, 20)   // Plataforma da porta (porta ficará ACIMA)
         };
         
         // 3 chaves coloridas espalhadas
@@ -44,10 +46,10 @@ public class InteractTestStage extends JPanel {
             new Key(430, 330, "AMARELA")   // Chave amarela na plataforma 2
         };
         
-        // Porta azul ACIMA da plataforma (n�o penetrando)
+        // Porta azul ACIMA da plataforma (não penetrando)
         door = new Door(380, 50);
         
-        // Elevador din�mico (plataforma m�vel) - movimento suave
+        // Elevador dinâmico (plataforma móvel) - movimento suave
         ArrayList<PlataformaDinamica.Ponto> pontosElevador = new ArrayList<>();
         pontosElevador.add(new PlataformaDinamica.Ponto(150, 450, 0)); // Ponto inicial (embaixo) sem delay
         pontosElevador.add(new PlataformaDinamica.Ponto(150, 85, 1000));  // Ponto final (em cima) com delay de 1s
@@ -55,15 +57,18 @@ public class InteractTestStage extends JPanel {
         elevatorPlatform = new PlataformaDinamica(150, 450, 80, 15, pontosElevador, true, 2.0f);
         elevator = new Elevator(15, 300); //base do elevador, ponto de chegada.
         
-        // Invent�rio com 3 slots
+        // Inventário com 3 slots
         inventory = new Inventory();
         
-        // Usar KeyBindings ao inv�s de KeyListener para garantir funcionamento
+        // Inicializar timer display - 1 minuto (60 segundos), posicionado no lado direito
+        timerDisplay = new TimerDisplay("resources/images/timer_icon.txt", 60, 650, 30, 32);
+        
+        // Usar KeyBindings ao invés de KeyListener para garantir funcionamento
         setupKeyBindings();
         
         Timer timer = new Timer(16, e -> {
             updatePlayer();
-            elevatorPlatform.update(); // Atualizar movimento da plataforma din�mica
+            elevatorPlatform.update(); // Atualizar movimento da plataforma dinâmica
             repaint();
         });
         timer.start();
@@ -76,7 +81,7 @@ public class InteractTestStage extends JPanel {
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"), "jump");
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("E"), "interact");
         
-        // Mapear a��es de movimento
+        // Mapear ações de movimento
         getActionMap().put("moveLeft", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -105,7 +110,7 @@ public class InteractTestStage extends JPanel {
             }
         });
         
-        // Mapear libera��o de teclas
+        // Mapear liberação de teclas
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released LEFT"), "stopLeft");
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released RIGHT"), "stopRight");
         
@@ -134,7 +139,7 @@ public class InteractTestStage extends JPanel {
         
         Rectangle playerBounds = player.getBounds();
         
-        // Colis�o com o ch�o
+        // Colisão com o chão
         Rectangle groundBounds = ground.getBounds();
         if (playerBounds.intersects(groundBounds)) {
             if (playerBounds.y < groundBounds.y) {
@@ -143,7 +148,7 @@ public class InteractTestStage extends JPanel {
             }
         }
         
-        // Colis�o com plataformas fixas
+        // Colisão com plataformas fixas
         for (PlataformaSimples platform : platforms) {
             Rectangle platformBounds = platform.getBounds();
             if (playerBounds.intersects(platformBounds) && player.getVy() > 0) {
@@ -153,7 +158,7 @@ public class InteractTestStage extends JPanel {
             }
         }
         
-        // Colis�o com plataforma m�vel do elevador        
+        // Colisão com plataforma móvel do elevador        
         Rectangle elevatorPlatformBounds = elevatorPlatform.getBounds();
         if (playerBounds.intersects(elevatorPlatformBounds) && player.getVy() > 0) {
             if (playerBounds.y < elevatorPlatformBounds.y) {
@@ -169,29 +174,29 @@ public class InteractTestStage extends JPanel {
             playerBounds.width + 20, playerBounds.height + 20
         );
         
-        // Verificar intera��o com as chaves
+        // Verificar interação com as chaves
         for (Key key : keys) {
             if (key.isVisible() && interactionArea.intersects(key.getBounds())) {
                 if (inventory.addItem(key.getColor())) {
                     key.collect();
                     System.out.println("Chave " + key.getColor() + " coletada!");
                 } else {
-                    System.out.println("Invent�rio cheio!");
+                    System.out.println("Inventário cheio!");
                 }
                 return;
             }
         }
         
-        // Verificar intera��o com elevador (caixa de controle ou estando na plataforma)
+        // Verificar interação com elevador (caixa de controle ou estando na plataforma)
         boolean interagindoComControle = interactionArea.intersects(elevator.getControlBoxBounds());
         boolean jogadorNaPlataforma = playerBounds.intersects(elevatorPlatform.getBounds());
         
         if (interagindoComControle || (jogadorNaPlataforma && elevator.isActivated())) {
             if (!elevator.isActivated()) {
-                // Elevador ainda n�o foi ativado - precisa da chave azul
+                // Elevador ainda não foi ativado - precisa da chave azul
                 if (inventory.hasItem("AZUL")) {
                     elevator.activate();
-                    // N�o ativa o movimento autom�tico, apenas ativa o elevador
+                    // Não ativa o movimento automático, apenas ativa o elevador
                     // elevatorPlatform.ativar(); 
                     inventory.removeItem("AZUL");
                     System.out.println("Elevador ativado com chave azul! Use o controle para subir/descer.");
@@ -199,7 +204,7 @@ public class InteractTestStage extends JPanel {
                     System.out.println("Precisa da chave azul para ativar o elevador!");
                 }
             } else {
-                // Elevador j� ativado - alternar entre subir e descer
+                // Elevador já ativado - alternar entre subir e descer
                 java.awt.Rectangle plataformaBounds = elevatorPlatform.getBounds();
                 if (plataformaBounds.y > 200) {
                     // Se estiver embaixo, vai para cima (ponto 1)
@@ -214,7 +219,7 @@ public class InteractTestStage extends JPanel {
             return;
         }
         
-        // Verificar intera��o com porta
+        // Verificar interação com porta
         if (interactionArea.intersects(door.getBounds())) {
             if (!door.isOpen()) {
                 if (inventory.hasItem("AMARELA")) {
@@ -225,7 +230,7 @@ public class InteractTestStage extends JPanel {
                     System.out.println("Precisa da chave amarela para abrir a porta!");
                 }
             } else {
-                System.out.println("Porta j� est� aberta!");
+                System.out.println("Porta já está aberta!");
             }
             return;
         }
@@ -236,7 +241,7 @@ public class InteractTestStage extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         
-        // Desenhar ch�o
+        // Desenhar chão
         ground.draw(g2);
         
         // Desenhar plataformas
@@ -251,7 +256,7 @@ public class InteractTestStage extends JPanel {
             }
         }
         
-        // Desenhar elevador (plataforma din�mica + caixa de controle)
+        // Desenhar elevador (plataforma dinâmica + caixa de controle)
         elevatorPlatform.draw(g2);
         elevator.draw(g2);
         
@@ -263,7 +268,7 @@ public class InteractTestStage extends JPanel {
         
         // Desenhar UI
         g2.setColor(Color.WHITE);
-        g2.drawString("Teste de Intera��o - Use setas para mover, ESPA�O para pular", 20, 30);
+        g2.drawString("Teste de Interação - Use setas para mover, ESPAÇO para pular", 20, 30);
         g2.drawString("Pressione E para interagir com objetos", 20, 50);
         g2.drawString("Player: (" + player.getX() + ", " + player.getY() + ")", 20, 70);
         
@@ -284,8 +289,20 @@ public class InteractTestStage extends JPanel {
         g2.drawString(elevatorStatus, 20, 110);
         g2.drawString("Porta: " + (door.isOpen() ? "ABERTA" : "fechada"), 20, 130);
         
-        // Desenhar invent�rio
+        // Desenhar inventário
         inventory.draw(g2, 20, 150);
+        
+        // Desenhar timer display no canto superior direito
+        timerDisplay.draw(g2);
+    }
+    
+    @Override
+    public void removeNotify() {
+        // Limpar recursos quando o painel for removido
+        if (timerDisplay != null) {
+            timerDisplay.dispose();
+        }
+        super.removeNotify();
     }
     
     // Classe interna para as chaves
@@ -346,7 +363,7 @@ public class InteractTestStage extends JPanel {
             g.drawRect(x, y, 30, 50);
             
             if (!open) {
-                // Ma�aneta amarela
+                // Maçaneta amarela
                 g.setColor(Color.YELLOW);
                 g.fillOval(x + 22, y + 25, 6, 6);
                 g.setColor(Color.ORANGE);
@@ -378,11 +395,11 @@ public class InteractTestStage extends JPanel {
         }
         
         public void draw(Graphics2D g) {
-            // APENAS caixa de controle no ch�o - a plataforma real � a elevatorPlatform
+            // APENAS caixa de controle no chão - a plataforma real é a elevatorPlatform
             
-            // Caixa de controle fixa no ch�o
+            // Caixa de controle fixa no chão
             int controlX = x + 25;
-            int controlY = 520; // Fixo no ch�o (y=520)
+            int controlY = 520; // Fixo no chão (y=520)
             
             // Desenhar caixa de controle
             if (activated) {
@@ -394,9 +411,9 @@ public class InteractTestStage extends JPanel {
             g.setColor(Color.BLACK);
             g.drawRect(controlX, controlY, 15, 25);
             
-            // Bot�es de controle
+            // Botões de controle
             if (activated) {
-                // Bot�o de subir (tri�ngulo para cima)
+                // Botão de subir (triângulo para cima)
                 g.setColor(Color.YELLOW);
                 g.fillRect(controlX + 3, controlY + 3, 9, 9);
                 g.setColor(Color.BLACK);
@@ -404,7 +421,7 @@ public class InteractTestStage extends JPanel {
                 int[] yPoints = {controlY + 4, controlY + 10, controlY + 10};
                 g.fillPolygon(xPoints, yPoints, 3);
                 
-                // Bot�o de descer (tri�ngulo para baixo)
+                // Botão de descer (triângulo para baixo)
                 g.setColor(Color.YELLOW);
                 g.fillRect(controlX + 3, controlY + 13, 9, 9);
                 g.setColor(Color.BLACK);
@@ -417,11 +434,11 @@ public class InteractTestStage extends JPanel {
                 g.fillOval(controlX + 3, controlY + 3, 9, 9);
             }
             
-            // Cabo/trilho do elevador (visual) - do ch�o at� bem alto
+            // Cabo/trilho do elevador (visual) - do chão até bem alto
             g.setColor(Color.DARK_GRAY);
             g.drawLine(controlX + 7, 50, controlX + 7, 550); // Trilho vertical
             
-            // Texto de instru��o
+            // Texto de instrução
             if (!activated) {
                 g.setColor(Color.WHITE);
                 g.drawString("Precisa chave azul", controlX - 30, controlY - 5);
@@ -446,7 +463,7 @@ public class InteractTestStage extends JPanel {
         }
     }
     
-    // Classe interna para o invent�rio
+    // Classe interna para o inventário
     private static class Inventory {
         private ArrayList<String> items;
         private final int MAX_SLOTS = 3;
@@ -473,7 +490,7 @@ public class InteractTestStage extends JPanel {
         
         public void draw(Graphics2D g, int x, int y) {
             g.setColor(Color.WHITE);
-            g.drawString("Invent�rio (" + items.size() + "/" + MAX_SLOTS + "):", x, y);
+            g.drawString("Inventário (" + items.size() + "/" + MAX_SLOTS + "):", x, y);
             
             for (int i = 0; i < MAX_SLOTS; i++) {
                 int slotX = x + i * 30;

@@ -3,6 +3,13 @@
 ## Visão Geral
 JumpMan é um jogo de plataforma 2D em Java com sistema de puzzles, clima dinâmico e mecânicas de interação.
 
+## Instruções Rápidas
+Para instruções detalhadas sobre como compilar, executar e desenvolver o projeto, consulte o arquivo [INSTRUCTIONS.md](INSTRUCTIONS.md).
+
+Para iniciar o jogo rapidamente:
+- Windows: Execute `run_with_instructions.bat`
+- Unix/Linux/Mac: Execute `run_with_instructions.sh`
+
 ## 🎮 Sandboxes de Teste Implementados
 
 ### 1. **ScreenTestStage** - Teste de Sistema Climático
@@ -61,45 +68,52 @@ JumpMan é um jogo de plataforma 2D em Java com sistema de puzzles, clima dinâm
 
 ## 🚀 Como Alternar Entre Testes
 
+O sistema agora utiliza o `GameLauncher` para iniciar os diferentes modos de jogo:
+
 ### Para Testar Interação (Atual):
 ```java
 // App.java - linha ativa
-SwingUtilities.invokeLater(App::showInteractTest);
+GameLauncher.launch(LaunchMode.INTERACTION_TEST);
 ```
 
 ### Para Testar Clima:
 ```java
 // App.java - comentar linha atual e ativar:
-SwingUtilities.invokeLater(App::showTestStage);
+GameLauncher.launch(LaunchMode.WEATHER_TEST);
 ```
 
 ### Para Jogo Original:
 ```java
-// App.java - descomentar bloco original:
-SwingUtilities.invokeLater(() -> {
-    try {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeel());
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    new MainFrame().setVisible(true);
-});
+// App.java - descomentar esta linha:
+GameLauncher.launch(LaunchMode.NORMAL);
 ```
 
 ## 📁 Estrutura do Projeto
 
-### Folders
-- `src`: Código fonte principal
+O projeto foi reorganizado seguindo uma estrutura modular baseada em pacotes por responsabilidade. Para detalhes completos, consulte [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md).
+
+### Diretórios Principais
+- `src/br/com/jumpman`: Código fonte principal
+  - `core`: Classes de inicialização e configuração
+  - `data/enums`: Enumerações do sistema
+  - `entities`: Entidades do jogo (Player, Key, Door, etc.)
+  - `fx`: Sistema de efeitos visuais e clima
+  - `platforms`: Sistema de plataformas
+  - `screens`: Interfaces gráficas
+  - `stages`: Estágios jogáveis
+  - `timer`: Sistema de temporização
+  - `utils`: Utilitários
 - `lib`: Dependências
 - `bin`: Arquivos compilados
 
 ### Classes Principais
-- `App.java`: Ponto de entrada com alternância de testes
-- `Player.java`: Mecânicas de movimento e física
-- `PlataformaSimples.java`: Plataformas básicas para colisão
-- `PlataformaDinamica.java`: Plataformas móveis e elevadores
-- `GameWeatherControl.java`: Sistema climático completo
-- `InteractTestStage.java`: Sandbox de interação atual
+- `App.java`: Ponto de entrada com sistema modular de inicialização
+- `core/GameLauncher.java`: Gerenciador de modos de inicialização
+- `entities/Player.java`: Mecânicas de movimento e física
+- `platforms/PlataformaSimples.java`: Plataformas básicas para colisão
+- `platforms/PlataformaDinamica.java`: Plataformas móveis e elevadores
+- `fx/GameWeatherControl.java`: Sistema climático completo
+- `screens/InteractTestStage.java`: Sandbox de interação atual
 
 ## 🎯 Próximos Desenvolvimentos
 - Expansão do sistema de inventário

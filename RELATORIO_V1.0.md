@@ -450,6 +450,21 @@ O projeto JumpMan v1.1 representa uma evolução significativa da arquitetura in
    - ✅ Todos os efeitos funcionam simultaneamente
    - ✅ Sem travamentos ou bugs visuais
 
+### 🛗 **Teste 8: Sistema de Elevador**
+1. **Acessar a área de interação**:
+   - Execute o jogo com `java -cp "bin" br.com.jumpman.App`
+   - Navegue para InteractTestStage
+2. **Sequência de interação**:
+   - Coletar a chave azul (plataforma 1)
+   - Aproximar-se do elevador
+   - Pressionar **E** para ativar elevador
+   - Pressionar **E** novamente para subir/descer
+3. **Verificação visual**:
+   - ✅ Botões de direção acendem
+   - ✅ Plataforma move-se suavemente
+   - ✅ Feedback na UI confirma ação
+   - ✅ Elevador para nos pontos corretos
+
 ### ✅ **Critérios de Aprovação**
 - [ ] Todos os 7 testes passaram sem erros
 - [ ] Interface responsiva em todos os cenários

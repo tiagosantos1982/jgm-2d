@@ -1,7 +1,8 @@
 package br.com.jumpman.screens;
 
-import br.com.jumpman.Player;
-import br.com.jumpman.PlataformaSimples;
+import br.com.jumpman.entities.Player;
+import br.com.jumpman.platforms.PlataformaSimples;
+import br.com.jumpman.components.TimerDisplay;
 import br.com.jumpman.fx.GameWeatherControl;
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +13,7 @@ public class ScreenTestStage extends JPanel {
     private transient Player player;
     private transient PlataformaSimples[] platforms;
     private transient GameWeatherControl weatherControl;
+    private transient TimerDisplay timerDisplay;
     private boolean left;
     private boolean right;
 
@@ -28,6 +30,10 @@ public class ScreenTestStage extends JPanel {
         };
         // Inicializar controle de clima (groundY mais baixo para nao colidir com plataformas)
         weatherControl = new GameWeatherControl(580, 800, 600); // groundY = 580 (era 500)
+        
+        // Inicializar o timer display - 1 minuto (60 segundos), posicionado no lado direito
+        timerDisplay = new TimerDisplay("d:/00-MyLab/java/jumpman/resources/images/timer_icon.txt", 60, 650, 30, 32);
+        
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -106,6 +112,15 @@ public class ScreenTestStage extends JPanel {
         super.addNotify();
         requestFocusInWindow();
     }
+    
+    @Override
+    public void removeNotify() {
+        // Limpar recursos quando o painel for removido
+        if (timerDisplay != null) {
+            timerDisplay.dispose();
+        }
+        super.removeNotify();
+    }
 
     private void updateWeather() {
         // Criar lista de obstaculos para colisao da chuva
@@ -167,5 +182,8 @@ public class ScreenTestStage extends JPanel {
         g2.drawString("Intensidade: " + weatherControl.getRainIntensity() + " | Densidade: " + weatherControl.getRainDensity(), 20, 190);
         g2.drawString("GroundY (chao): " + weatherControl.getGroundY(), 20, 210);
         g2.drawString("Splash na chuva: Nas plataformas e no player!", 20, 230);
+        
+        // Desenhar o timer display no canto superior direito
+        timerDisplay.draw(g2);
     }
 }

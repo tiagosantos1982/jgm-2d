@@ -13,7 +13,7 @@ public class ScreenInitial extends JPanel {
         this.frame = frame;
         setLayout(null);
         setOpaque(false);
-        JLabel title = new JLabel("Reino das Justas", SwingConstants.CENTER);
+        JLabel title = new JLabel("Lost Stories", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 48));
         title.setBounds(0, 60, 1024, 80);
         add(title);

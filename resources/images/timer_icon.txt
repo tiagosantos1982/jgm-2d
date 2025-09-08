@@ -1,0 +1,5 @@
+This file is a placeholder for a timer icon image.
+In a real implementation, this would be replaced with an actual image file (PNG, JPG, etc.)
+representing a timer or clock icon.
+
+The TimerDisplay component will fall back to a default programmatically drawn icon if this file can't be loaded.

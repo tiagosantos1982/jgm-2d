@@ -2,7 +2,7 @@ package br.com.jumpman.fx;
 
 import java.awt.*;
 import java.util.ArrayList;
-import br.com.jumpman.RainParticle;
+
 import br.com.jumpman.timer.PeriodTimer;
 
 public class GameWeatherControl {

@@ -1,4 +1,4 @@
-package br.com.jumpman;
+package br.com.jumpman.fx;
 
 import java.awt.*;
 import java.util.Random;
