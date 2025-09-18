@@ -2,7 +2,6 @@ package br.com.jumpman.screens;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -19,6 +18,7 @@ import br.com.jumpman.entities.Player;
 import br.com.jumpman.components.TimerDisplay;
 import br.com.jumpman.platforms.PlataformaDinamica;
 import br.com.jumpman.platforms.PlataformaSimples;
+import br.com.jumpman.utils.CollisionDetector;
 
 public class ScreenFloodStage extends JPanel
 {
@@ -35,7 +35,6 @@ public class ScreenFloodStage extends JPanel
     private transient TimerDisplay         timerDisplay;
     private boolean                        left;
     private boolean                        right;
-    private boolean                        jump;
     
     // Para debug - mostra informacoes sobre ancoragem
     private boolean                        showDebugInfo = true;
@@ -116,7 +115,6 @@ public class ScreenFloodStage extends JPanel
             right = true;
         }
         if (keyCode == KeyEvent.VK_SPACE) {
-            jump = true;
             player.jump();
         }
         // Tecla para ativar/desativar debug
@@ -131,9 +129,6 @@ public class ScreenFloodStage extends JPanel
         }
         if (keyCode == KeyEvent.VK_RIGHT) {
             right = false;
-        }
-        if (keyCode == KeyEvent.VK_SPACE) {
-            jump = false;
         }
     }
     
@@ -156,86 +151,49 @@ public class ScreenFloodStage extends JPanel
     }
     
     /**
-     * Verifica colisoes do player com todas as plataformas
+     * Verifica colis�es do player com todas as plataformas
      */
     private void checkCollisions() {
-        Rectangle playerBounds = player.getBounds();
-        boolean playerEmPlataforma = false;
-        
-        // Colisao com o chao
-        Rectangle groundBounds = ground.getBounds();
-        if (playerBounds.intersects(groundBounds)) {
-            if (playerBounds.y + playerBounds.height - 5 <= groundBounds.y) {
-                // Player caindo no chao
-                player.landOn(groundBounds.y);
-                player.desancorarDaPlataforma(); // Desancora quando pousar no chao
-                playerEmPlataforma = true;
-            }
+        // Usar o m�todo do CollisionDetector para tratar colis�o com o ch�o
+        if (CollisionDetector.checkAndResolveCollision(player, ground)) {
+            // O ch�o n�o � uma plataforma din�mica, ent�o sempre desancoramos
+            player.desancorarDaPlataforma();
         }
         
-        // Colisao com plataformas fixas
+        // Verificar colis�es com plataformas fixas
         for (PlataformaSimples platform : plataformasFixas) {
-            Rectangle platformBounds = platform.getBounds();
-            if (playerBounds.intersects(platformBounds) && player.getVy() >= 0) {
-                if (playerBounds.y + playerBounds.height - 5 <= platformBounds.y) {
-                    player.landOn(platformBounds.y);
-                    player.desancorarDaPlataforma(); // Desancora quando pousar em plataforma fixa
-                    playerEmPlataforma = true;
-                }
+            if (CollisionDetector.checkAndResolveCollision(player, platform)) {
+                // Nas plataformas fixas, sempre desancoramos
+                player.desancorarDaPlataforma();
             }
         }
         
-        // Colisao com plataformas moveis
+        // Verificar colis�es com plataformas m�veis
         for (PlataformaDinamica platformDin : plataformasMoveis) {
-            Rectangle platformBounds = platformDin.getBounds();
-            
-            // So processamos colisoes com plataformas visiveis
-            if (platformDin.isVisivel() && playerBounds.intersects(platformBounds)) {
-                // Determinar o tipo de colisao
-                if (player.getVy() >= 0 && playerBounds.y + playerBounds.height - 5 <= platformBounds.y) {
-                    // Colisao com o topo da plataforma - pousar e ancorar
-                    player.landOn(platformBounds.y);
-                    player.ancorarNaPlataforma(platformDin);
-                    platformDin.setPlayerSobre(true);
-                    playerEmPlataforma = true;
-                } else {
-                    // Outro tipo de colisao - desancorar
-                    if (player.getPlataformaAtual() == platformDin) {
-                        player.desancorarDaPlataforma();
-                    }
-                    platformDin.setPlayerSobre(false);
-                }
-            } else {
-                // Nao esta colidindo com esta plataforma
+            // S� processamos colis�es com plataformas vis�veis
+            if (!platformDin.isVisivel()) {
                 if (player.getPlataformaAtual() == platformDin) {
-                    // Se estava ancorado nesta plataforma mas nao esta mais colidindo
-                    if (!platformDin.getBounds().intersects(playerBounds)) {
-                        player.desancorarDaPlataforma();
-                    }
+                    // Se a plataforma ficou invis�vel, desancorar o player
+                    player.desancorarDaPlataforma();
                 }
+                platformDin.setPlayerSobre(false);
+                continue;
+            }
+            
+            // O m�todo checkAndResolveCollision j� trata todos os tipos de colis�o
+            // e gerencia a ancoragem corretamente
+            CollisionDetector.checkAndResolveCollision(player, platformDin);
+            
+            // Verificar se o player saiu da plataforma onde estava ancorado
+            if (player.getPlataformaAtual() == platformDin && 
+                !platformDin.getBounds().intersects(player.getBounds())) {
+                player.desancorarDaPlataforma();
                 platformDin.setPlayerSobre(false);
             }
         }
-        
-        // Se o player nao esta em nenhuma plataforma e nao esta pulando
-        if (!playerEmPlataforma && !player.isJumping() && !player.estaAncorado()) {
-            // Comecar a cair
-            // Nada a fazer aqui - a gravidade ja e aplicada no update do player
-        }
     }
     
-    /**
-     * Verifica se o player esta sobre uma plataforma especifica
-     * (contato com o topo da plataforma)
-     */
-    private boolean playerSobrePlataforma(Player player, PlataformaDinamica plataforma) {
-        Rectangle playerBounds = player.getBounds();
-        Rectangle platformBounds = plataforma.getBounds();
-        
-        return playerBounds.intersects(platformBounds) && 
-               playerBounds.y + playerBounds.height - 5 <= platformBounds.y &&
-               player.getVy() >= 0; // So considera "sobre" se estiver caindo ou parado
-    }
+
 
     @Override
     protected void paintComponent(Graphics g) {

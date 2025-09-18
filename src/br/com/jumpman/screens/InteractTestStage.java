@@ -137,33 +137,22 @@ public class InteractTestStage extends JPanel {
         if (right) player.moveRight();
         if (!left && !right) player.stop();
         
-        Rectangle playerBounds = player.getBounds();
+        // Usando o detector de colis�o melhorado
+        // Verifica��o de colis�o com o ch�o - SEMPRE VERIFICAR PRIMEIRO
+        br.com.jumpman.utils.CollisionDetector.checkAndResolveCollision(player, ground);
         
-        // Colisão com o chão
-        Rectangle groundBounds = ground.getBounds();
-        if (playerBounds.intersects(groundBounds)) {
-            if (playerBounds.y < groundBounds.y) {
-                // Player caindo no chao - usar landOn que existe
-                player.landOn(groundBounds.y);
-            }
-        }
-        
-        // Colisão com plataformas fixas
+        // Colis�o com plataformas fixas
         for (PlataformaSimples platform : platforms) {
-            Rectangle platformBounds = platform.getBounds();
-            if (playerBounds.intersects(platformBounds) && player.getVy() > 0) {
-                if (playerBounds.y < platformBounds.y) {
-                    player.landOn(platformBounds.y);
-                }
-            }
+            br.com.jumpman.utils.CollisionDetector.checkAndResolveCollision(player, platform);
         }
         
-        // Colisão com plataforma móvel do elevador        
-        Rectangle elevatorPlatformBounds = elevatorPlatform.getBounds();
-        if (playerBounds.intersects(elevatorPlatformBounds) && player.getVy() > 0) {
-            if (playerBounds.y < elevatorPlatformBounds.y) {
-                player.landOn(elevatorPlatformBounds.y);
-            }
+        // Colis�o com plataforma m�vel do elevador
+        br.com.jumpman.utils.CollisionDetector.checkAndResolveCollision(player, elevatorPlatform);
+        
+        // Este c�digo n�o � mais necess�rio, pois o CollisionDetector j� faz essa verifica��o
+        // Mantemos apenas a verifica��o de quando o player N�O est� sobre a plataforma
+        if (!player.getBounds().intersects(elevatorPlatform.getBounds()) || player.isJumping()) {
+            elevatorPlatform.setPlayerSobre(false);
         }
     }
     

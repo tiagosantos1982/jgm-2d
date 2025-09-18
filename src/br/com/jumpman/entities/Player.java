@@ -183,7 +183,10 @@ public class Player implements AbstractEntity {
      * @param platY Posi��o Y da plataforma
      */
     public void landOn(int platY) {
-        y = platY - h;
+        // Garantir que o player n�o fique "preso" dentro da plataforma
+        if (y + h > platY) {
+            y = platY - h;
+        }
         vy = 0;
         jumping = false;
     }
@@ -239,11 +242,30 @@ public class Player implements AbstractEntity {
     }
     
     /**
+     * Define a posi��o X do jogador
+     * 
+     * @param x Nova posi��o X
+     */
+    public void setX(int x) {
+        this.x = x;
+    }
+    
+    /**
      * Interrompe a queda do jogador
      */
     public void stopFalling() {
         this.vy = 0;
         this.jumping = false;
+    }
+    
+    /**
+     * M�todo para interromper o movimento ascendente ao colidir com uma plataforma por baixo
+     */
+    public void stopRising() {
+        // Se estiver subindo, fazer parar de subir
+        if (this.vy < 0) {
+            this.vy = 1.0; // Pequena velocidade para baixo para iniciar queda
+        }
     }
     
     /**
